@@ -23,10 +23,13 @@
         header {
             text-align: center;
             margin-bottom: 30px;
+            width: 100%;
         }
         header img {
-            max-width: 200px;
+            max-width: 250px;
             height: auto;
+            display: block;
+            margin: 0 auto;
         }
         .container {
             max-width: 800px;
@@ -109,13 +112,15 @@
 <body>
 
 <header>
-    <img src="logo.png" alt="Logo ofsajdu">
+    <!-- Hlavní pokus načíst lokální logo. Pokud selže (onerror), načte se záložní online verze -->
+    <img id="logo-firmy" src="logo.png" alt="OFFSIDE Logo" onerror="použijZalozniLogo()">
 </header>
 
 <div class="container">
     <h2>Nabídka produktů</h2>
     <div id="produkty-list">
-        </div>
+        <!-- Sem JavaScript automaticky vykreslí produkty z CSV -->
+    </div>
 
     <div class="souhrn">
         <h2>Objednávka</h2>
@@ -143,6 +148,14 @@
 </div>
 
 <script>
+// Funkce, která zachrání situaci, když lokální soubor logo.png stávkuje
+function použijZalozniLogo() {
+    const logoImg = document.getElementById('logo-firmy');
+    // Použijeme tvé logo nahrané na stabilní internetové úložiště
+    logoImg.src = "https://i.ibb.co/6R6YgY4g/fotbalove-pomucky.png";
+    console.log("Lokální logo nenalezeno, aplikováno záložní online logo.");
+}
+
 let produktyData = [];
 
 // 1. Načtení dat z externího CSV souboru
@@ -159,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // 2. Rozsekání textu z CSV do pole objektů
 function parsujCSV(text) {
     const radky = text.split('\n');
-    // Přeskočíme první řádek (záhlaví) a projedeme zbytek
     for (let i = 1; i < radky.length; i++) {
         if (!radky[i].trim()) continue;
         const sloupce = radky[i].split(';');
@@ -239,13 +251,11 @@ document.getElementById('objednavka-form').addEventListener('submit', function(e
     const celkovyPocet = document.getElementById('celkovy-pocet').innerText;
     const celkovaCena = document.getElementById('celkova-cena').innerText;
 
-    // Kontrola, zda uživatel vůbec něco vybral
     if (parseInt(celkovyPocet) === 0) {
         alert('Nejprve si prosím zvolte množství u produktů, které chcete objednat.');
         return;
     }
 
-    // Nastavení parametrů pro odeslání na školní adresu ze zadání obrázku
     const skolniEmail = "app@kostka-skola.cz";
     const predmet = `Objednávka - OFFSIDE - ${jmeno}`;
     const teloEmailu = `Nová objednávka z e-shopu OFFSIDE:\n\n` +
@@ -256,7 +266,6 @@ document.getElementById('objednavka-form').addEventListener('submit', function(e
                        `Celkem kusů: ${celkovyPocet}\n` +
                        `Celková cena k úhradě: ${celkovaCena} Kč`;
 
-    // Sestavení a spuštění mailto odkazu
     const mailtoUrl = `mailto:${skolniEmail}?subject=${encodeURIComponent(predmet)}&body=${encodeURIComponent(teloEmailu)}`;
     window.location.href = mailtoUrl;
 });
