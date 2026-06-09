@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OFFSIDE - Fotbalové pomůcky</title>
+    <style>
+        :root {
+            --bg-color: #F7F4EB;
+            --main-color: #0F1633;
+            --accent-color: #F26532;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--main-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header img {
+            max-width: 200px;
+            height: auto;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .produkt-karta {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .produkt-info h3 {
+            margin: 0 0 5px 0;
+        }
+        .produkt-info p {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .cena {
+            font-weight: bold;
+            color: var(--main-color);
+        }
+        .vstupy {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .souhrn {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 6px;
+            border: 2px solid var(--main-color);
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #d64f1c;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="logo.png" alt="OFFSIDE Logo">
+</header>
+
+<div class="container">
+    <h2>Nabídka produktů</h2>
+    <div id="produkty-list">
+        </div>
+
+    <div class="souhrn">
+        <h2>Objednávka</h2>
+        <p>Počet vybraných kusů: <span id="celkovy-pocet">0</span> ks</p>
+        <p>Celková cena: <span id="celkova-cena">0</span> Kč</p>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <form id="objednavka-form">
+            <div class="form-group">
+                <label for="jmeno">Jméno a příjmení:</label>
+                <input type="text" id="jmeno" value="Matouš Havránek" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" value="havranek.maty3@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label for="telefon">Telefon:</label>
+                <input type="tel" id="telefon" value="+420 603 541 885" required>
+            </div>
+            <button type="submit">ODESLAT OBJEDNÁVKU</button>
+        </form>
+    </div>
+</div>
+
+<script>
+let produktyData = [];
+
+// 1. Načtení dat z externího CSV souboru
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('produkty.csv')
+        .then(response => response.text())
+        .then(data => {
+            parsujCSV(data);
+            vykresliProdukty();
+        })
+        .catch(err => console.error("Chyba při načítání CSV souboru:", err));
+});
+
+// 2. Rozsekání textu z CSV do pole objektů
+function parsujCSV(text) {
+    const radky = text.split('\n');
+    // Přeskočíme první řádek (záhlaví) a projedeme zbytek
+    for (let i = 1; i < radky.length; i++) {
+        if (!radky[i].trim()) continue;
+        const sloupce = radky[i].split(';');
+        produktyData.push({
+            id: sloupce[0],
+            jmeno: sloupce[1],
+            popis: sloupce[2],
+            cena: parseInt(sloupce[3])
+        });
+    }
+}
+
+// 3. Vytvoření produktových karet na stránce
+function vykresliProdukty() {
+    const list = document.getElementById('produkty-list');
+    list.innerHTML = '';
+
+    produktyData.forEach(produkt => {
+        const karta = document.createElement('div');
+        karta.className = 'produkt-karta';
+        karta.innerHTML = `
+            <div class="produkt-info">
+                <h3>${produkt.jmeno}</h3>
+                <p>${produkt.popis}</p>
+                <span class="cena">${produkt.cena} Kč</span>
+            </div>
+            <div class="vstupy">
+                <label>Ks:</label>
+                <input type="number" min="0" value="0" data-id="${produkt.id}" class="pocet-input" oninput="prepocitejKosik()">
+            </div>
+        `;
+        list.appendChild(karta);
+    });
+}
+
+// 4. Přepočet celkového počtu kusů a výsledné ceny
+function prepocitejKosik() {
+    let celkovyPocet = 0;
+    let celkovaCena = 0;
+    const vstupy = document.querySelectorAll('.pocet-input');
+
+    vstupy.forEach(vstup => {
+        const id = vstup.getAttribute('data-id');
+        const pocet = parseInt(vstup.value) || 0;
+        const produkt = produktyData.find(p => p.id === id);
+
+        if (produkt && pocet > 0) {
+            celkovyPocet += pocet;
+            celkovaCena += (pocet * produkt.cena);
+        }
+    });
+
+    document.getElementById('celkovy-pocet').innerText = celkovyPocet;
+    document.getElementById('celkova-cena').innerText = celkovaCena;
+}
+
+// 5. Zpracování odeslání na školní e-mail přes mailto odkaz
+document.getElementById('objednavka-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const jmeno = document.getElementById('jmeno').value;
+    const email = document.getElementById('email').value;
+    const telefon = document.getElementById('telefon').value;
+    
+    let objednaneZboziText = '';
+    const vstupy = document.querySelectorAll('.pocet-input');
+
+    vstupy.forEach(vstup => {
+        const id = vstup.getAttribute('data-id');
+        const pocet = parseInt(vstup.value) || 0;
+        const produkt = produktyData.find(p => p.id === id);
+        if (produkt && pocet > 0) {
+            objednaneZboziText += `- ${produkt.jmeno}: ${pocet}x (${pocet * produkt.cena} Kč)\n`;
+        }
+    });
+
+    const celkovyPocet = document.getElementById('celkovy-pocet').innerText;
+    const celkovaCena = document.getElementById('celkova-cena').innerText;
+
+    // Kontrola, zda uživatel vůbec něco vybral
+    if (parseInt(celkovyPocet) === 0) {
+        alert('Nejprve si prosím zvolte množství u produktů, které chcete objednat.');
+        return;
+    }
+
+    // Nastavení parametrů pro odeslání na školní adresu ze zadání obrázku
+    const skolniEmail = "app@kostka-skola.cz";
+    const predmet = `Objednávka - OFFSIDE - ${jmeno}`;
+    const teloEmailu = `Nová objednávka z e-shopu OFFSIDE:\n\n` +
+                       `Zákazník: ${jmeno}\n` +
+                       `E-mail: ${email}\n` +
+                       `Telefon: ${telefon}\n\n` +
+                       `Objednané položky:\n${objednaneZboziText}\n` +
+                       `Celkem kusů: ${celkovyPocet}\n` +
+                       `Celková cena k úhradě: ${celkovaCena} Kč`;
+
+    // Sestavení a spuštění mailto odkazu
+    const mailtoUrl = `mailto:${skolniEmail}?subject=${encodeURIComponent(predmet)}&body=${encodeURIComponent(teloEmailu)}`;
+    window.location.href = mailtoUrl;
+});
+</script>
+
+</body>
+</html>
