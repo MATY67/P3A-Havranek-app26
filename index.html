@@ -6,9 +6,9 @@
     <title>OFFSIDE - Fotbalové pomůcky</title>
     <style>
         :root {
-            --bg-color: #F7F4EB;
-            --main-color: #0F1633;
-            --accent-color: #F26532;
+            --bg-color: #F7F4EB; /* Krémové pozadí z loga */
+            --main-color: #0F1633; /* Tmavě modrá z loga */
+            --accent-color: #F26532; /* Oranžová z loga */
         }
         body {
             font-family: 'Arial', sans-serif;
@@ -112,15 +112,13 @@
 <body>
 
 <header>
-    <!-- Hlavní pokus načíst lokální logo. Pokud selže (onerror), načte se záložní online verze -->
-    <img id="logo-firmy" src="logo.png" alt="OFFSIDE Logo" onerror="použijZalozniLogo()">
+    <img src="logo.png" alt="OFFSIDE Logo">
 </header>
 
 <div class="container">
     <h2>Nabídka produktů</h2>
     <div id="produkty-list">
-        <!-- Sem JavaScript automaticky vykreslí produkty z CSV -->
-    </div>
+        </div>
 
     <div class="souhrn">
         <h2>Objednávka</h2>
@@ -148,14 +146,6 @@
 </div>
 
 <script>
-// Funkce, která zachrání situaci, když lokální soubor logo.png stávkuje
-function použijZalozniLogo() {
-    const logoImg = document.getElementById('logo-firmy');
-    // Použijeme tvé logo nahrané na stabilní internetové úložiště
-    logoImg.src = "https://i.ibb.co/6R6YgY4g/fotbalove-pomucky.png";
-    console.log("Lokální logo nenalezeno, aplikováno záložní online logo.");
-}
-
 let produktyData = [];
 
 // 1. Načtení dat z externího CSV souboru
